@@ -68,7 +68,7 @@ def feature_normalize(X):
 print('Loading data ...\n')
 
 # Load Data
-#data = np.loadtxt('ex1data2.txt', delimiter=',')
+data = np.loadtxt('ex1data2.txt', delimiter=',')
 n = data.shape[1]
 X = data[:, 0:(n-1)]
 y = data[:, n-1]
