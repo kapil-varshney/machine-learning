@@ -68,10 +68,10 @@ def feature_normalize(X):
 print('Loading data ...\n')
 
 # Load Data
-data = np.loadtxt('ex1data2.txt', delimiter=',')
+#data = np.loadtxt('ex1data2.txt', delimiter=',')
 n = data.shape[1]
 X = data[:, 0:(n-1)]
-y = data[:, n]
+y = data[:, n-1]
 m = len(y)  # number of training examples
 
 # Print out some data points
@@ -79,7 +79,6 @@ print('First 10 examples from the dataset: \n')
 print(data[0:10,:])
 
 print('Program paused. Press enter to continue.\n')
-input()
 
 # Scale features and set them to zero mean
 print('Normalizing Features ...\n')
@@ -116,7 +115,7 @@ X = np.hstack((np.ones((m,1)), X))
 '''
 
 
-def compute_cost_function(X, y, theta):
+def compute_cost_multi(X, y, theta):
 
     """
     Compute cost for linear regression with multiple variables
@@ -133,15 +132,17 @@ def compute_cost_function(X, y, theta):
 
     # =========================================================================
 
-def gradient_descent_multi(X,y,theta, alpha, num_iters):
+
+def gradient_descent_multi(X, y, theta, alpha, num_iters):
 
     """
     Performs gradient descent to learn theta
     It updates theta by
     taking num_iters gradient steps with learning rate alpha
     """
-
     m = len(y)  # number of training examples
+    y = y.reshape(m,1)
+    theta_temp = np.copy(theta)
     J_history = np.zeros((num_iters, 1))
 
     for i in range(num_iters):
@@ -153,11 +154,15 @@ def gradient_descent_multi(X,y,theta, alpha, num_iters):
         # Hint: While debugging, it can be useful to print out the values
         #       of the cost function (compute_cost_multi) and gradient here.
         #
-
-        # ============================================================
+        for j in range(X.shape[1]):
+            theta_temp[j] = (alpha/m) * ((X.dot(theta) - y) * X[:, j].reshape(m, 1)).sum()
 
         # Save the cost J in every iteration
-        J_history(iter) = computeCostMulti(X, y, theta);
+        J_history[i] = compute_cost_multi(X, y, theta)
+
+        theta = theta - theta_temp
+        # ============================================================
+    return theta, J_history
 
 print('Running gradient descent ...\n')
 
@@ -167,11 +172,13 @@ num_iters = 400
 
 # Init Theta and Run Gradient Descent
 theta = np.zeros((n, 1))
-[theta, J_history] = gradient_descent_multi(X, y, theta, alpha, num_iters)
+theta, J_history = gradient_descent_multi(X, y, theta, alpha, num_iters)
+print(theta, J_history)
+
 
 # Plot the convergence graph
 fig = plt.figure()
-#plt(1:numel(J_history), J_history, '-b', linewidth=2)
+plt.plot(range(num_iters), J_history, '-b', linewidth=2)
 plt.xlabel('Number of iterations')
 plt.ylabel('Cost J')
 
@@ -185,11 +192,67 @@ print('\n')
 # Recall that the first column of X is all-ones. Thus, it does
 # not need to be normalized.
 price = 0  # You should change this
-
-
+y_test = np.array([1, (1650-mu[0])/sigma[0], (3-mu[1])/sigma[1]])
+price = y_test.dot(theta)
 # ============================================================
 
 print('Predicted price of a 1650 sq-ft, 3 br house (using gradient descent):\n $%f\n' %price)
 
 print('Program paused. Press enter to continue.\n')
 input()
+
+
+# ================ Part 3: Normal Equations ================
+
+print('Solving with normal equations...\n');
+
+'''
+% ====================== YOUR CODE HERE ======================
+% Instructions: The following code computes the closed form 
+%               solution for linear regression using the normal
+%               equations. You should complete the code in 
+%               normalEqn.m
+%
+%               After doing so, you should complete this code 
+%               to predict the price of a 1650 sq-ft, 3 br house.
+%
+'''
+
+def normal_eqn(X, y):
+    """
+    Computes the closed-form solution to linear regression
+    regression using the normal equations.
+    """
+
+    #theta = np.zeros((X.shape[1], 1))
+
+    # ====================== YOUR CODE HERE ======================
+    # Instructions: Complete the code to compute the closed form solution
+    #               to linear regression and put the result in theta.
+    #
+
+    theta_ne = np.dot(np.dot(np.linalg.inv(np.dot(X.T, X)),X.T),(y.reshape(m,1)))
+    return theta_ne
+    # ============================================================
+
+# Add intercept term to X
+X_ne = np.hstack((np.ones((m, 1)), data[:, 0:(n-1)]))
+
+# Calculate the parameters from the normal equation
+theta_ne = normal_eqn(X_ne, y)
+
+# Display normal equation's result
+print('Theta computed from the normal equations: \n')
+print(theta_ne)
+print('\n')
+
+
+# Estimate the price of a 1650 sq-ft, 3 br house
+# ====================== YOUR CODE HERE ======================
+y_test_ne = np.array([1, 1650, 3])
+price_ne = y_test_ne.dot(theta_ne)  # You should change this
+
+
+# ============================================================
+
+print('Predicted price of a 1650 sq-ft, 3 br house (using normal equations):\n $%f\n' %price_ne)
